@@ -9,6 +9,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types.input_file import FSInputFile
 from dotenv import load_dotenv
 import os
+from app.games.roll import rolling
+from app.games.weird_game import SPERMA
 load_dotenv()
 
 
@@ -19,7 +21,6 @@ rules_text = "1. Добавляйте только существующие пр
 
 bot = Bot(token=os.getenv('TOKEN_API'))
 dp = Dispatcher()
-
 
 last_subject = list()
 last_chat_id = list()
@@ -35,6 +36,10 @@ def check(message_id):
     with open('app/files/stat.json', 'w') as f:
         json.dump(stat, f)
         f.close()
+
+
+def admin(message):
+    return message.chat.type == 'supergroup' and message.from_user.id == '841610537'
 
 
 class NewSubjectBook(StatesGroup):
@@ -275,3 +280,24 @@ async def callback_add_book_3(message: message):
     await message.answer("Полный список пользователей, которые пользовались ботом")
     for item in stat["id"]:
         await message.answer(f"@{item}")
+
+
+@dp.message(Command('game_words'))
+async def game_words(message:message):
+    if admin(message):
+        await message.answer("Начинаем игру в слова\nСледующее слово начинается на последнюю букву предыдущего\nПовторяться слова не должны")
+
+
+@dp.message(Command('roll'))
+async def test(message:message):
+    res = rolling(message.from_user.first_name)
+    if res == 0:
+        await message.reply(f"Увы, {message.from_user.first_name}, отныне ты жертва Носовицкого")
+    else:
+        await message.reply(f"Повезло, {message.from_user.first_name} не стал попуском {res} раз")
+
+
+@dp.message(Command('SPERMA'))
+async def test(message:message):
+    res = SPERMA(message.from_user.first_name)
+    await message.reply(f"{message.from_user.first_name} сверкнул умом {res} раз")
